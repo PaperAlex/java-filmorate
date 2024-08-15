@@ -20,40 +20,38 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
-        log.info("Вызываем список пользователей");
         return users.values();
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         // проверяем выполнение необходимых условий
-        log.info("Создаем нового юзера");
+        log.debug("Создание нового пользователя id: {}", user.getId());
         checkDuplicatedEmail(user);
         nameValidation(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
-        log.info("Создан юзер {}", user);
+        log.info("Создан новый пользователь");
         return user;
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
         if (newUser.getId() == null) {
-            log.warn("Не указан id юзера");
+            log.warn("Ошибка валидации, id null недопустимо");
             throw new ValidationException("Id должен быть указан");
         }
-        log.info("Обновляем информацию юзера");
+        log.debug("Обновляем информацию пользователя id: {}", newUser.getId());
         updateUserValidation(newUser);
 
         if (users.containsKey(newUser.getId())) {
             users.put(newUser.getId(), newUser);
         }
-        log.trace("Обновили информацию юзера {}", newUser);
+        log.info("Обновили информацию пользователя");
         return newUser;
     }
 
     private long getNextId() {
-        log.info("Создаем id юзера");
         long currentMaxId = users.keySet()
                 .stream()
                 .mapToLong(id -> id)
@@ -77,7 +75,7 @@ public class UserController {
         String name = user.getName();
         if (name == null || name.isBlank() || name.isEmpty()) {
             user.setName(user.getLogin());
-            log.debug("Сохранили имя юзера {}", user.getId());
+            log.info("Сохранили имя пользователя");
         }
     }
 
@@ -86,7 +84,7 @@ public class UserController {
         String name = newUser.getName();
         if (name == null || name.isBlank() || name.isEmpty()) {
             newUser.setName(oldUser.getName());
-            log.debug("Обновили имя юзера {}", newUser.getId());
+            log.info("Обновили имя пользователя");
         }
     }
 
@@ -95,7 +93,7 @@ public class UserController {
         String email = newUser.getEmail();
         if (email == null || email.isBlank() || email.isEmpty()) {
             newUser.setEmail(oldUser.getEmail());
-            log.debug("Обновили почту юзера {}", newUser.getId());
+            log.info("Обновили почту пользователя");
         }
     }
 
@@ -104,7 +102,7 @@ public class UserController {
         String login = newUser.getLogin();
         if (login == null || login.isBlank() || login.isEmpty()) {
             newUser.setLogin(oldUser.getLogin());
-            log.debug("Обновили login юзера {}", newUser.getId());
+            log.info("Обновили login пользователя");
         }
     }
 
@@ -113,20 +111,20 @@ public class UserController {
         String birthday = newUser.getLogin();
         if (birthday == null || birthday.isBlank() || birthday.isEmpty()) {
             newUser.setBirthday(oldUser.getBirthday());
-            log.debug("Обновили login юзера {}", newUser.getId());
+            log.info("Обновили дату рождения");
         }
     }
 
     private void birthdayValidation(LocalDate birthday) {
         if (birthday == null || birthday.isAfter(LocalDate.now())) {
-            log.error("Ошибка даты рождения");
+            log.warn("Ошибка валидации, дата {} недопустима", birthday);
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
     }
 
     private void checkDuplicatedEmail(User user) {
         if (users.values().stream().anyMatch(list -> list.getEmail().equals(user.getEmail()))) {
-            log.error("Такая почта уже используется");
+            log.warn("Ошибка валидации, почта {} уже существует", user.getEmail());
             throw new ValidationException("Этот имейл уже используется");
         }
     }

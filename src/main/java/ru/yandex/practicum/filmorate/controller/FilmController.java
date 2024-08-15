@@ -20,46 +20,43 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
-        log.info("Вызываем список фильмов");
         return films.values();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        log.info("Создаем новый фильм");
+        log.debug("Создание нового фильма id: {}", film.getId());
         // проверяем выполнение необходимых условий
         validateFilm(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
-        log.trace("Создали новый фильм {}", film);
+        log.info("Создан новый фильм");
         return film;
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film newFilm) {
-        log.info("Обновляем фильм");
         if (newFilm.getId() == null) {
-            log.warn("Не указан id фильма");
+            log.warn("Ошибка валидации, id null недопустимо");
             throw new ValidationException("Id должен быть указан");
         }
 
         if (!films.containsKey(newFilm.getId())) {
-            log.warn("Указан неверный id");
+            log.error("Ошибка, id {} нет в списке", newFilm.getId());
             throw new ValidationException("Такого id фильма нет в списке");
         }
 
-        log.info("Обновляем информацию о фильме");
+        log.debug("Обновление фильма id: {}", newFilm.getId());
         updateFilmValidation(newFilm);
 
         if (films.containsKey(newFilm.getId())) {
             films.put(newFilm.getId(), newFilm);
-            log.trace("Обновили фильм: {}", newFilm);
+            log.info("Обновлен фильм");
         }
         return newFilm;
     }
 
     private long getNextId() {
-        log.info("Создаем id фильма");
         long currentMaxId = films.keySet()
                 .stream()
                 .mapToLong(id -> id)
@@ -70,14 +67,14 @@ public class FilmController {
 
     private void nameValidation(String name) {
         if (name == null || name.isBlank() || name.isEmpty()) {
-            log.error("Название фильма не может быть пустым");
+            log.warn("Ошибка валидации, название фильма null");
             throw new ValidationException("Название фильма не может быть пустым");
         }
     }
 
     private void releaseDateValidation(LocalDate releaseDate) {
         if (releaseDate == null || releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
-            log.error("Дата релиза — не раньше 28 декабря 1895 года");
+            log.warn("Ошибка валидации, указана дата до 28.12.1895");
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
     }
@@ -99,7 +96,7 @@ public class FilmController {
         String name = newFilm.getName();
         if (name == null || name.isBlank() || name.isEmpty()) {
             newFilm.setName(oldFilm.getName());
-            log.debug("Обновили имя фильма {}", newFilm.getId());
+            log.info("Обновлено имя фильма");
         }
     }
 
@@ -108,7 +105,7 @@ public class FilmController {
         String description = newFilm.getDescription();
         if (description == null || description.isBlank() || description.isEmpty()) {
             newFilm.setDescription(oldFilm.getDescription());
-            log.debug("Обновили описание {}", newFilm.getId());
+            log.info("Обновлено описание фильма");
         }
     }
 
@@ -117,7 +114,7 @@ public class FilmController {
         LocalDate releaseDate = newFilm.getReleaseDate();
         if (releaseDate == null) {
             newFilm.setReleaseDate(oldFilm.getReleaseDate());
-            log.debug("Обновили дату выпуска {}", newFilm.getId());
+            log.info("Обновлена дата выпуска фильма");
         }
     }
 
@@ -126,7 +123,7 @@ public class FilmController {
         Integer duration = newFilm.getDuration();
         if (duration == null) {
             newFilm.setDuration(oldFilm.getDuration());
-            log.debug("Обновили продолжительность {}", newFilm.getId());
+            log.info("Обновлена продолжительность фильма");
         }
     }
 }
