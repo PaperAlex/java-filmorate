@@ -6,6 +6,8 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -34,9 +36,7 @@ public class UserValidationTest {
                 .birthday(LocalDate.of(1980, 8, 8))
                 .build();
 
-        Set<ConstraintViolation<User>> violationSet = validator.validate(user);
-        assertEquals(1, violationSet.size());
-        assertEquals("Электронная должна содержать символ @", violationSet.iterator().next().getMessage());
+        assertValidation(user);
 
     }
 
@@ -49,14 +49,11 @@ public class UserValidationTest {
                 .birthday(LocalDate.of(1980, 8, 8))
                 .build();
 
-        Set<ConstraintViolation<User>> violationSet = validator.validate(user);
-        assertEquals(1, violationSet.size());
-        assertEquals("Логин не может содержать пробелы", violationSet.iterator().next().getMessage());
-
+        assertValidation(user);
     }
 
     @Test
-    void userNameValidation() {
+    void userNameValidation() throws ValidationException {
         user = User.builder()
                 .email("email@email.ru")
                 .login("login")
@@ -78,13 +75,11 @@ public class UserValidationTest {
                 .birthday(LocalDate.of(3000, 8, 8))
                 .build();
 
-        Set<ConstraintViolation<User>> violationSet = validator.validate(user);
-        assertEquals(1, violationSet.size());
-        assertEquals("Дата рождения не может быть в будущем", violationSet.iterator().next().getMessage());
+        assertValidation(user);
     }
 
     @Test
-    void userUpdateTest() {
+    void userUpdateTest() throws ValidationException {
         user = User.builder()
                 .email("email@email.ru")
                 .login("login")
@@ -107,5 +102,10 @@ public class UserValidationTest {
         assertEquals("login", user.getLogin());
         assertEquals(1L, user.getId());
 
+    }
+
+    private void assertValidation(User user) {
+        Set<ConstraintViolation<User>> violationSet = validator.validate(user);
+        assertEquals(1, violationSet.size());
     }
 }

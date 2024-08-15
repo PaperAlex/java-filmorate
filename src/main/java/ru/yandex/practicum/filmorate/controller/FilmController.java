@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.apache.commons.lang3.StringUtils;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -24,7 +25,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) throws ValidationException {
         log.debug("Создание нового фильма id: {}", film.getId());
         // проверяем выполнение необходимых условий
         validateFilm(film);
@@ -35,7 +36,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
+    public Film update(@Valid @RequestBody Film newFilm) throws ValidationException {
         if (newFilm.getId() == null) {
             log.warn("Ошибка валидации, id null недопустимо");
             throw new ValidationException("Id должен быть указан");
@@ -65,21 +66,21 @@ public class FilmController {
         return ++currentMaxId;
     }
 
-    private void nameValidation(String name) {
-        if (name == null || name.isBlank() || name.isEmpty()) {
+    private void nameValidation(String name) throws ValidationException {
+        if (StringUtils.isBlank(name)) {
             log.warn("Ошибка валидации, название фильма null");
             throw new ValidationException("Название фильма не может быть пустым");
         }
     }
 
-    private void releaseDateValidation(LocalDate releaseDate) {
+    private void releaseDateValidation(LocalDate releaseDate) throws ValidationException {
         if (releaseDate == null || releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
             log.warn("Ошибка валидации, указана дата до 28.12.1895");
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
     }
 
-    private void validateFilm(Film film) {
+    private void validateFilm(Film film) throws ValidationException {
         nameValidation(film.getName());
         releaseDateValidation(film.getReleaseDate());
     }
@@ -94,7 +95,7 @@ public class FilmController {
     private void newNameValidation(Film newFilm) {
         Film oldFilm = films.get(newFilm.getId());
         String name = newFilm.getName();
-        if (name == null || name.isBlank() || name.isEmpty()) {
+        if (StringUtils.isBlank(name)) {
             newFilm.setName(oldFilm.getName());
             log.info("Обновлено имя фильма");
         }
@@ -103,7 +104,7 @@ public class FilmController {
     private void newDescriptionValidation(Film newFilm) {
         Film oldFilm = films.get(newFilm.getId());
         String description = newFilm.getDescription();
-        if (description == null || description.isBlank() || description.isEmpty()) {
+        if (StringUtils.isBlank(description)) {
             newFilm.setDescription(oldFilm.getDescription());
             log.info("Обновлено описание фильма");
         }

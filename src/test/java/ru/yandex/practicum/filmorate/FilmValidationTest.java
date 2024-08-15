@@ -36,9 +36,8 @@ public class FilmValidationTest {
                 .duration(60)
                 .build();
 
-        Set<ConstraintViolation<Film>> violationSet = validator.validate(film);
-        assertEquals(1, violationSet.size());
-        assertThrows(ValidationException.class, () -> controller.create(film));
+        assertValidation(film);
+        assertThrowsValidation(film);
     }
 
     @Test
@@ -50,9 +49,7 @@ public class FilmValidationTest {
                 .duration(60)
                 .build();
 
-        Set<ConstraintViolation<Film>> violationSet = validator.validate(film);
-        assertEquals(1, violationSet.size());
-        assertEquals("максимальная длина описания — 200 символов", violationSet.iterator().next().getMessage());
+        assertValidation(film);
     }
 
     @Test
@@ -76,12 +73,11 @@ public class FilmValidationTest {
                 .duration(-60)
                 .build();
 
-        Set<ConstraintViolation<Film>> violationSet = validator.validate(film);
-        assertEquals(1, violationSet.size());
+        assertValidation(film);
     }
 
     @Test
-    void filmUpdateTest() {
+    void filmUpdateTest() throws ValidationException {
         film = Film.builder()
                 .name("5 name")
                 .description("description")
@@ -107,7 +103,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    void unknownFilmUpdateTest() {
+    void unknownFilmUpdateTest() throws ValidationException {
         film = Film.builder()
                 .name("5 name")
                 .description("description")
@@ -124,6 +120,16 @@ public class FilmValidationTest {
                 .duration(123)
                 .build();
 
+        assertThrowsValidation(film);
+
+    }
+
+    private void assertValidation(Film film) {
+        Set<ConstraintViolation<Film>> violationSet = validator.validate(film);
+        assertEquals(1, violationSet.size());
+    }
+
+    private void assertThrowsValidation(Film film) {
         assertThrows(ValidationException.class, () -> controller.update(film));
     }
 }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -24,19 +25,20 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
+    public User create(@Valid @RequestBody User user) throws ValidationException {
         // проверяем выполнение необходимых условий
-        log.debug("Создание нового пользователя id: {}", user.getId());
+        log.info("Создание нового пользователя login: {}", user.getLogin());
+        log.debug("user = {}", user);
         checkDuplicatedEmail(user);
         nameValidation(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
-        log.info("Создан новый пользователь");
+        log.info("Новый пользователь успешно создан, id={}, login={}, email={}", user.getId(), user.getLogin(), user.getEmail());
         return user;
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User newUser) {
+    public User update(@Valid @RequestBody User newUser) throws ValidationException {
         if (newUser.getId() == null) {
             log.warn("Ошибка валидации, id null недопустимо");
             throw new ValidationException("Id должен быть указан");
@@ -60,7 +62,7 @@ public class UserController {
         return ++currentMaxId;
     }
 
-    private void updateUserValidation(User user) {
+    private void updateUserValidation(User user) throws ValidationException {
         checkDuplicatedEmail(user);
         newEmailValidation(user);
         nameValidation(user);
@@ -73,16 +75,16 @@ public class UserController {
 
     private void nameValidation(User user) {
         String name = user.getName();
-        if (name == null || name.isBlank() || name.isEmpty()) {
+        if (StringUtils.isBlank(name)) {
             user.setName(user.getLogin());
-            log.info("Сохранили имя пользователя");
+            log.info("Сохранили login как имя пользователя");
         }
     }
 
     private void newNameValidation(User newUser) {
         User oldUser = users.get(newUser.getId());
         String name = newUser.getName();
-        if (name == null || name.isBlank() || name.isEmpty()) {
+        if (StringUtils.isBlank(name)) {
             newUser.setName(oldUser.getName());
             log.info("Обновили имя пользователя");
         }
@@ -91,7 +93,7 @@ public class UserController {
     private void newEmailValidation(User newUser) {
         User oldUser = users.get(newUser.getId());
         String email = newUser.getEmail();
-        if (email == null || email.isBlank() || email.isEmpty()) {
+        if (StringUtils.isBlank(email)) {
             newUser.setEmail(oldUser.getEmail());
             log.info("Обновили почту пользователя");
         }
@@ -100,7 +102,7 @@ public class UserController {
     private void newLoginValidation(User newUser) {
         User oldUser = users.get(newUser.getId());
         String login = newUser.getLogin();
-        if (login == null || login.isBlank() || login.isEmpty()) {
+        if (StringUtils.isBlank(login)) {
             newUser.setLogin(oldUser.getLogin());
             log.info("Обновили login пользователя");
         }
@@ -108,21 +110,21 @@ public class UserController {
 
     private void newBirthdayValidation(User newUser) {
         User oldUser = users.get(newUser.getId());
-        String birthday = newUser.getLogin();
-        if (birthday == null || birthday.isBlank() || birthday.isEmpty()) {
+        LocalDate birthday = newUser.getBirthday();
+        if (birthday == null) {
             newUser.setBirthday(oldUser.getBirthday());
             log.info("Обновили дату рождения");
         }
     }
 
-    private void birthdayValidation(LocalDate birthday) {
+    private void birthdayValidation(LocalDate birthday) throws ValidationException {
         if (birthday == null || birthday.isAfter(LocalDate.now())) {
             log.warn("Ошибка валидации, дата {} недопустима", birthday);
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
     }
 
-    private void checkDuplicatedEmail(User user) {
+    private void checkDuplicatedEmail(User user) throws ValidationException {
         if (users.values().stream().anyMatch(list -> list.getEmail().equals(user.getEmail()))) {
             log.warn("Ошибка валидации, почта {} уже существует", user.getEmail());
             throw new ValidationException("Этот имейл уже используется");
