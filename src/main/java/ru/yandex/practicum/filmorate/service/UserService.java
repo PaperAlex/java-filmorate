@@ -20,17 +20,17 @@ public class UserService {
         return userStorage.findById(id).get();
     }
 
-    public void addFriend (Long userId, Long friendId) {
+    public void addFriend(Long userId, Long friendId) {
         findUserById(userId).getFriends().add(friendId);
         findUserById(friendId).getFriends().add(userId);
     }
 
-    public void deleteFriend (Long userId, Long friendId) {
+    public void deleteFriend(Long userId, Long friendId) {
         findUserById(userId).getFriends().remove(friendId);
         findUserById(friendId).getFriends().remove(userId);
     }
 
-    public Collection<User> findAllFriends (Long userId) {
+    public Collection<User> findAllFriends(Long userId) {
         User user = findUserById(userId);
         Set<Long> friendsIds = user.getFriends();
 
@@ -40,6 +40,7 @@ public class UserService {
         }
         return friendsList;
     }
+
     public Collection<User> findMutualFriends(Long userId, Long friendId) {
         Collection<User> userFriends = findAllFriends(userId);
         Collection<User> friendFriends = findAllFriends(friendId);
