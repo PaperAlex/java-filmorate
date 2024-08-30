@@ -131,14 +131,14 @@ public class InMemoryUserStorage implements UserStorage {
             throw new DuplicatedDataException("Эта почта уже используется");
         }
     }
-    
+
     public void userIdValidation(User user) {
-        if (users.values().stream().anyMatch(list -> list.getId().equals(user.getId()))) {
-        } else {
+        if (users.values().stream().noneMatch(list -> list.getId().equals(user.getId()))) {
             log.warn("Ошибка валидации, пользователя с Id: {} не существует", user.getId());
             throw new NotFoundException("Пользователя с таким Id не существует");
         }
     }
+
 
     @Override
     public Optional<User> findById(Long id) {
