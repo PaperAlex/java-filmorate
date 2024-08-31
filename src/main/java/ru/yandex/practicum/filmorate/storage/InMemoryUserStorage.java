@@ -52,7 +52,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void newUserValidation (User user) throws DuplicatedDataException {
+    public void newUserValidation(User user) throws DuplicatedDataException {
         checkDuplicatedEmail(user);
         nameValidation(user);
     }
