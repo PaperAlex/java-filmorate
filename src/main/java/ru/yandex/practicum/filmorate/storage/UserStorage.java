@@ -17,7 +17,7 @@ public interface UserStorage {
 
     Optional<User> findById(Long id) throws NotFoundException;
 
-    void newUserValidation (User user) throws DuplicatedDataException;
+    void newUserValidation(User user) throws DuplicatedDataException;
 
     void updateUserValidation(User user) throws ValidationException, DuplicatedDataException, NotFoundException;
 }
