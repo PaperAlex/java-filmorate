@@ -6,6 +6,8 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -57,7 +59,7 @@ public class UserValidationTest {
     }
 
     @Test
-    void userNameValidation() throws ValidationException {
+    void userNameValidation() throws ValidationException, DuplicatedDataException {
         user = User.builder()
                 .email("email@email.ru")
                 .login("login")
@@ -83,7 +85,7 @@ public class UserValidationTest {
     }
 
     @Test
-    void userUpdateTest() throws ValidationException {
+    void userUpdateTest() throws ValidationException, DuplicatedDataException, NotFoundException {
         user = User.builder()
                 .email("email@email.ru")
                 .login("login")

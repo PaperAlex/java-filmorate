@@ -88,7 +88,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    void filmUpdateTest() throws ValidationException {
+    void filmUpdateTest() throws ValidationException, NotFoundException {
         film = Film.builder()
                 .name("5 name")
                 .description("description")
