@@ -25,12 +25,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User create(User user) throws ValidationException {
+    public User create(User user) throws ValidationException, DuplicatedDataException {
         // проверяем выполнение необходимых условий
-        log.info("Создание нового пользователя login: {}", user.getLogin());
-        log.debug("user = {}", user);
-        checkDuplicatedEmail(user);
-        nameValidation(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
         log.info("Новый пользователь успешно создан, id={}, login={}, email={}", user.getId(), user.getLogin(), user.getEmail());
@@ -38,15 +34,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User update(User newUser) throws ValidationException {
-        if (newUser.getId() == null) {
-            log.warn("Ошибка валидации, id null недопустимо");
-            throw new NotFoundException("Id должен быть указан");
-        }
-        userIdValidation(newUser);
-        log.debug("Обновляем информацию пользователя id: {}", newUser.getId());
-        updateUserValidation(newUser);
-
+    public User update(User newUser) throws ValidationException, NotFoundException, DuplicatedDataException {
         if (users.containsKey(newUser.getId())) {
             users.put(newUser.getId(), newUser);
         }
@@ -63,7 +51,15 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 
-    private void updateUserValidation(User user) throws ValidationException {
+    @Override
+    public void newUserValidation (User user) throws DuplicatedDataException {
+        checkDuplicatedEmail(user);
+        nameValidation(user);
+    }
+
+    @Override
+    public void updateUserValidation(User user) throws ValidationException, DuplicatedDataException, NotFoundException {
+        userIdValidation(user);
         checkDuplicatedEmail(user);
         newEmailValidation(user);
         nameValidation(user);
@@ -125,14 +121,14 @@ public class InMemoryUserStorage implements UserStorage {
         }
     }
 
-    private void checkDuplicatedEmail(User user) throws ValidationException {
+    private void checkDuplicatedEmail(User user) throws DuplicatedDataException {
         if (users.values().stream().anyMatch(list -> list.getEmail().equals(user.getEmail()))) {
             log.warn("Ошибка валидации, почта {} уже существует", user.getEmail());
             throw new DuplicatedDataException("Эта почта уже используется");
         }
     }
 
-    public void userIdValidation(User user) {
+    private void userIdValidation(User user) throws NotFoundException {
         if (users.values().stream().noneMatch(list -> list.getId().equals(user.getId()))) {
             log.warn("Ошибка валидации, пользователя с Id: {} не существует", user.getId());
             throw new NotFoundException("Пользователя с таким Id не существует");
@@ -141,7 +137,7 @@ public class InMemoryUserStorage implements UserStorage {
 
 
     @Override
-    public Optional<User> findById(Long id) {
+    public Optional<User> findById(Long id) throws NotFoundException {
         if (users.values().stream().anyMatch((x -> x.getId().equals(id)))) {
             return Optional.ofNullable(users.get(id));
         } else {

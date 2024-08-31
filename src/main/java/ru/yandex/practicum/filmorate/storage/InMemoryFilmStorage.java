@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -12,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -26,9 +28,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film create(Film film) throws ValidationException {
-        log.debug("Создание нового фильма id: {}", film.getId());
-        // проверяем выполнение необходимых условий
-        validateFilm(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
         log.info("Создан новый фильм");
@@ -36,20 +35,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Film newFilm) throws ValidationException {
-        if (newFilm.getId() == null) {
-            log.warn("Ошибка валидации, id null недопустимо");
-            throw new ValidationException("Id должен быть указан");
-        }
-
-        if (!films.containsKey(newFilm.getId())) {
-            log.error("Ошибка, id {} нет в списке", newFilm.getId());
-            throw new NotFoundException("Такого id фильма нет в списке");
-        }
-
-        log.debug("Обновление фильма id: {}", newFilm.getId());
-        updateFilmValidation(newFilm);
-
+    public Film update(Film newFilm) throws ValidationException, NotFoundException {
         if (films.containsKey(newFilm.getId())) {
             films.put(newFilm.getId(), newFilm);
             log.info("Обновлен фильм");
@@ -66,30 +52,20 @@ public class InMemoryFilmStorage implements FilmStorage {
         return ++currentMaxId;
     }
 
-    private void nameValidation(String name) throws ValidationException {
-        if (StringUtils.isBlank(name)) {
-            log.warn("Ошибка валидации, название фильма null");
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
-    }
-
-    private void releaseDateValidation(LocalDate releaseDate) throws ValidationException {
-        if (releaseDate == null || releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
-            log.warn("Ошибка валидации, указана дата до 28.12.1895");
-            throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
-        }
-    }
-
-    private void validateFilm(Film film) throws ValidationException {
-        nameValidation(film.getName());
-        releaseDateValidation(film.getReleaseDate());
-    }
-
-    private void updateFilmValidation(Film newFilm) {
+    @Override
+    public void updateFilmValidation(Film newFilm) throws NotFoundException {
+        idFilmValidation(newFilm);
         newNameValidation(newFilm);
         newDescriptionValidation(newFilm);
         newReleaseDateValidation(newFilm);
         newDurationValidation(newFilm);
+    }
+
+    private void idFilmValidation(Film newFilm) throws NotFoundException {
+        if (!films.containsKey(newFilm.getId())) {
+            log.error("Ошибка, id {} нет в списке", newFilm.getId());
+            throw new NotFoundException("Такого id фильма нет в списке");
+        }
     }
 
     private void newNameValidation(Film newFilm) {
@@ -133,4 +109,18 @@ public class InMemoryFilmStorage implements FilmStorage {
         return Optional.ofNullable(films.get(id));
     }
 
+    @Override
+    public void likeDuplicatedValidation(Long filmId, Long userId) throws DuplicatedDataException {
+        if (findById(filmId).get().getLikes().contains(userId)) {
+            throw new DuplicatedDataException("Данный пользователь уже поставил Like этому фильму");
+        }
+    }
+
+    public Collection<Film> findPopularFilms(Integer count) {
+        return findAll()
+                .stream()
+                .sorted((film0, film1) -> Integer.compare(film1.getLikes().size(), film0.getLikes().size()))
+                .limit(count)
+                .collect(Collectors.toList());
+    }
 }

@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -26,33 +28,33 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User create(@Valid @RequestBody User user) throws ValidationException {
+    public User create(@Valid @RequestBody User user) throws ValidationException, DuplicatedDataException {
         return userService.create(user);
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User newUser) throws ValidationException {
+    public User update(@Valid @RequestBody User newUser) throws ValidationException, NotFoundException, DuplicatedDataException {
         return userService.update(newUser);
     }
 
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) throws NotFoundException {
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) throws NotFoundException {
         userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> findFriends(@PathVariable Long id) {
+    public Collection<User> findFriends(@PathVariable Long id) throws NotFoundException {
         return userService.findAllFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> findMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public Collection<User> findMutualFriends(@PathVariable Long id, @PathVariable Long otherId) throws NotFoundException {
         return userService.findMutualFriends(id, otherId);
     }
 }
