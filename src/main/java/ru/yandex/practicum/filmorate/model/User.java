@@ -30,5 +30,5 @@ public class User {
     private final Set<Long> friends = new HashSet<>();
     /* true -подтверждённая дружба — когда второй пользователь согласился на добавление,
      false - неподтверждённая — когда один пользователь отправил запрос на добавление другого пользователя в друзья.*/
-    boolean friend_status;
+    boolean friendStatus;
 }
