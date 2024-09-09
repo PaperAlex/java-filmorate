@@ -6,8 +6,15 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -19,12 +26,16 @@ public class FilmValidationTest {
 
     private Validator validator;
     private Film film;
-    private FilmController controller;
+    private final FilmStorage filmStorage = new InMemoryFilmStorage();
+    private final UserStorage userStorage = new InMemoryUserStorage();
+    private final UserService userService = new UserService(userStorage);
+    private final FilmService filmService = new FilmService(filmStorage, userStorage);
+    FilmController controller;
 
     @BeforeEach
     void beforeEach() {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
-        controller = new FilmController();
+        controller = new FilmController(filmService);
     }
 
     @Test
@@ -77,7 +88,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    void filmUpdateTest() throws ValidationException {
+    void filmUpdateTest() throws ValidationException, NotFoundException {
         film = Film.builder()
                 .name("5 name")
                 .description("description")
@@ -120,7 +131,7 @@ public class FilmValidationTest {
                 .duration(123)
                 .build();
 
-        assertThrowsValidation(film);
+        assertThrowsNotFound(film);
 
     }
 
@@ -131,5 +142,9 @@ public class FilmValidationTest {
 
     private void assertThrowsValidation(Film film) {
         assertThrows(ValidationException.class, () -> controller.update(film));
+    }
+
+    private void assertThrowsNotFound(Film film) {
+        assertThrows(NotFoundException.class, () -> controller.update(film));
     }
 }
