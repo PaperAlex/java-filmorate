@@ -26,7 +26,7 @@ Cервис, который работает с фильмами и оценка
 Найти друзей пользователя:
 ```sql
 SELECT u.login
-FROM user AS u
+FROM users AS u
 WHERE u.user_id IN (SELECT f.friend_id
                   FROM friends AS f
                   WHERE f.user_id = {userId} 
@@ -38,7 +38,7 @@ WHERE u.user_id IN (SELECT f.friend_id
 
 ```sql
 SELECT name
-FROM film
+FROM films
 WHERE film_id IN (SELECT film_id
                   FROM likes
                   GROUP BY film_id
@@ -50,7 +50,7 @@ WHERE film_id IN (SELECT film_id
 
 ```sql
 SELECT f.name
-FROM film AS f
+FROM films AS f
 WHERE f.film_id IN (SELECT film_id
                     FROM likes 
                     WHERE userd_id = {userId};)
