@@ -50,7 +50,7 @@ WHERE film_id IN (SELECT film_id
 
 ```sql
 SELECT f.name
-FROM film AS f
+FROM films AS f
 WHERE f.film_id IN (SELECT film_id
                     FROM likes 
                     WHERE userd_id = {userId};)
