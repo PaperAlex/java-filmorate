@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -7,15 +7,13 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
-@Component
+@Component("inMemoryFilmStorage")
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
 
@@ -51,13 +49,12 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 
-    @Override
+
     public void newUserValidation(User user) throws DuplicatedDataException {
         checkDuplicatedEmail(user);
         nameValidation(user);
     }
 
-    @Override
     public void updateUserValidation(User user) throws ValidationException, DuplicatedDataException, NotFoundException {
         userIdValidation(user);
         checkDuplicatedEmail(user);
@@ -137,12 +134,42 @@ public class InMemoryUserStorage implements UserStorage {
 
 
     @Override
-    public Optional<User> findById(Long id) throws NotFoundException {
-        if (users.values().stream().anyMatch((x -> x.getId().equals(id)))) {
-            return Optional.ofNullable(users.get(id));
+    public Optional<User> findUserById(Long userId) throws NotFoundException {
+        if (users.values().stream().anyMatch((x -> x.getId().equals(userId)))) {
+            return Optional.ofNullable(users.get(userId));
         } else {
-            log.warn("Ошибка валидации, пользователя с Id: {} не существует", id);
+            log.warn("Ошибка валидации, пользователя с Id: {} не существует", userId);
             throw new NotFoundException("Пользователя с таким Id не существует");
         }
+    }
+
+    @Override
+    public void addFriend(Long userId, Long friendId) throws NotFoundException {
+
+    }
+
+    @Override
+    public void acceptFriend(Long userId, Long friendId) throws NotFoundException {
+
+    }
+
+    @Override
+    public void deleteFriend(Long userId, Long friendId) throws NotFoundException {
+
+    }
+
+    @Override
+    public List<User> findAllFriends(Long userId) throws NotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<User> findMutualFriends(Long userId, Long otherId) {
+        return null;
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+
     }
 }

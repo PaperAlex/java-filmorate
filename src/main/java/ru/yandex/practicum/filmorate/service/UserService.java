@@ -1,7 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -9,39 +10,45 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
 
+    @Autowired
+    public UserService(@Qualifier("UserDbStorage"/*"InMemoryUserStorage"*/) UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
+
     public User findUserById(Long id) throws NotFoundException {
-        return userStorage.findById(id).get();
+        return userStorage.findUserById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 
     public void addFriend(Long userId, Long friendId) throws NotFoundException {
-        findUserById(userId).getFriends().add(friendId);
-        findUserById(friendId).getFriends().add(userId);
+        if (userStorage.findUserById(userId).isEmpty() || userStorage.findUserById(friendId).isEmpty()) {
+            throw new NotFoundException("Пользователь не найден.");
+        }
+        if (userId < 0 || friendId < 0) {
+            throw new NotFoundException("Пользователь не найден.");
+        }
+        log.debug("addFriend: {} to {}", friendId, userId);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(Long userId, Long friendId) throws NotFoundException {
-        findUserById(userId).getFriends().remove(friendId);
-        findUserById(friendId).getFriends().remove(userId);
+        if (userStorage.findUserById(userId).isEmpty() || userStorage.findUserById(friendId).isEmpty()) {
+            throw new NotFoundException("Пользователь не найден.");
+        }
+        log.debug("deleteFriend: {} from {}", friendId, userId);
+        userStorage.deleteFriend(userId, friendId);
     }
 
     public Collection<User> findAllFriends(Long userId) throws NotFoundException {
-        User user = findUserById(userId);
-        Set<Long> friendsIds = user.getFriends();
-
-        ArrayList<User> friendsList = new ArrayList<>();
-        for (Long id : friendsIds) {
-            friendsList.add(findUserById(id));
-        }
-        return friendsList;
+        User findUser = findUserById(userId);
+        log.debug("findAllFriends: {}", userId);
+        return userStorage.findAllFriends(userId);
     }
 
     public Collection<User> findMutualFriends(Long userId, Long friendId) throws NotFoundException {
@@ -56,20 +63,31 @@ public class UserService {
     }
 
     public User create(User user) throws ValidationException, DuplicatedDataException {
+        userNameValidation(user);
         log.info("Создание нового пользователя login: {}", user.getLogin());
         log.debug("user = {}", user);
-        userStorage.newUserValidation(user);
+        userNameValidation(user);
         return userStorage.create(user);
     }
 
     public User update(User newUser) throws ValidationException, NotFoundException, DuplicatedDataException {
         log.debug("Обновляем информацию пользователя id: {}", newUser.getId());
-        userStorage.updateUserValidation(newUser);
-        if (newUser.getId() == null) {
+        userNameValidation(newUser);
+        User findUser = findUserById(newUser.getId());
+        if (findUser == null) {
             log.warn("Ошибка валидации, id null недопустимо");
             throw new NotFoundException("Id должен быть указан");
         }
         return userStorage.update(newUser);
     }
 
+    private void userNameValidation(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+    }
+
+    public void acceptFriend(Long userId, Long friendId) throws NotFoundException {
+        userStorage.acceptFriend(userId, friendId);
+    }
 }
