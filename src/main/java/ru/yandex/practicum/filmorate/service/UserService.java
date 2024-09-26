@@ -28,7 +28,7 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) throws NotFoundException {
-       userStorage.existById(userId, friendId);
+        userStorage.existById(userId, friendId);
         log.debug("addFriend: {} to {}", friendId, userId);
         userStorage.addFriend(userId, friendId);
     }

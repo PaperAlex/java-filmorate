@@ -187,7 +187,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public boolean existFilmById (Long newFilm) throws NotFoundException {
+    public boolean existFilmById(Long newFilm) throws NotFoundException {
         if (findFilmById(newFilm).isEmpty()) {
             log.warn("Ошибка валидации, id null недопустимо");
             throw new NotFoundException("Должен быть указан существующий id");
