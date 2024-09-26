@@ -42,10 +42,10 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long userId) throws NotFoundException, DuplicatedDataException {
-        Film film = filmStorage.findFilmById(filmId).orElseThrow(() -> new NotFoundException
-                ("Не удалось поставить Like, Фильм Id:" + filmId + "не найден."));
-        User user = userStorage.findUserById(userId).orElseThrow(() -> new NotFoundException
-                ("Пользователь Id:\" + filmId + \"не найден."));
+        Film film = filmStorage.findFilmById(filmId).orElseThrow(() -> new NotFoundException(
+                "Не удалось поставить Like, Фильм Id:" + filmId + "не найден."));
+        User user = userStorage.findUserById(userId).orElseThrow(() -> new NotFoundException(
+                "Пользователь Id:\" + filmId + \"не найден."));
 
         filmStorage.addLike(filmId, userId);
     }
