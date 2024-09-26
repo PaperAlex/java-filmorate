@@ -75,10 +75,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setId(keyHolder.getKey().longValue());
 
         for (Genre genre1 : film.getGenres()) {
-            Optional<Genre> g = genreStorage.findGenreById(genre1.getId());
-            if (g.isEmpty()) {
-                throw new ValidationException("Genre not found");
-            }
+            Genre g = genreStorage.findGenreById(genre1.getId())
+                    .orElseThrow(() -> new ValidationException("Genre not found"));
         }
 
         if (film.getGenres() != null) {
@@ -186,6 +184,16 @@ public class FilmDbStorage implements FilmStorage {
                 "LIMIT ?";
 
         return jdbcTemplate.query(sql, (resultSet, rowNum) -> mapRowFilm(resultSet), count);
+    }
+
+    @Override
+    public boolean existFilmById (Long newFilm) throws NotFoundException {
+        if (findFilmById(newFilm).isEmpty()) {
+            log.warn("Ошибка валидации, id null недопустимо");
+            throw new NotFoundException("Должен быть указан существующий id");
+        }
+        log.debug("Обновление фильма id: {}", newFilm);
+        return true;
     }
 }
 

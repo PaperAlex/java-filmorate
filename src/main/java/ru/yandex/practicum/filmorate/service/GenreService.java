@@ -27,12 +27,8 @@ public class GenreService {
     }
 
     public Optional<Genre> findGenreById(int id) throws NotFoundException {
-        Optional<Genre> genre = genreStorage.findGenreById(id);
-        if (genre.isPresent()) {
-            log.debug("findGenreById: {}", genre);
-            return genre;
-        } else {
-            throw new NotFoundException("Genre not found");
-        }
+        Genre genre = genreStorage.findGenreById(id).orElseThrow(() -> new NotFoundException("Genre not found"));
+        log.debug("findGenreById: {}", genre);
+        return Optional.ofNullable(genre);
     }
 }

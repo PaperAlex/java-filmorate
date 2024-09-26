@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.constraints.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -15,13 +17,13 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Optional;
 
 @Slf4j
 @Service
+@Validated
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
@@ -40,13 +42,11 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long userId) throws NotFoundException, DuplicatedDataException {
-        Optional<Film> film = filmStorage.findFilmById(filmId);
-        Optional<User> user = userStorage.findUserById(userId);
-        if (film.isEmpty()) {
-            throw new NotFoundException("Не удалось поставить Like, Фильм Id:" + filmId + "не найден.");
-        } else if (user.isEmpty()) {
-            throw new NotFoundException("Пользователь Id:" + filmId + "не найден.");
-        }
+        Film film = filmStorage.findFilmById(filmId).orElseThrow(() -> new NotFoundException
+                ("Не удалось поставить Like, Фильм Id:" + filmId + "не найден."));
+        User user = userStorage.findUserById(userId).orElseThrow(() -> new NotFoundException
+                ("Пользователь Id:\" + filmId + \"не найден."));
+
         filmStorage.addLike(filmId, userId);
     }
 
@@ -63,11 +63,7 @@ public class FilmService {
         return filmStorage.findFilmById(filmId);
     }
 
-    public Collection<Film> findPopularFilms(Integer count) throws ValidationException {
-        if (count <= 0) {
-            log.warn("Ошибка валидации, count null недопустимо");
-            throw new ValidationException("Количество фильмов должно быть больше 0");
-        }
+    public Collection<Film> findPopularFilms(@Positive Integer count) throws ValidationException {
         return filmStorage.findPopularFilms(count);
     }
 
@@ -75,17 +71,13 @@ public class FilmService {
         return filmStorage.findAll();
     }
 
-    public Film create(Film film) throws NotFoundException, ValidationException, SQLException {
+    public Film create(Film film) throws NotFoundException, ValidationException {
         validateFilm(film);
         return filmStorage.create(film);
     }
 
     public Film update(Film newFilm) throws ValidationException, NotFoundException {
-        if (filmStorage.findFilmById(newFilm.getId()).isEmpty()) {
-            log.warn("Ошибка валидации, id null недопустимо");
-            throw new NotFoundException("Должен быть указан существующий id");
-        }
-        log.debug("Обновление фильма id: {}", newFilm.getId());
+        filmStorage.existFilmById(newFilm.getId());
         return filmStorage.update(newFilm);
     }
 
@@ -110,7 +102,7 @@ public class FilmService {
     }
 
     private void mpaValidation(Integer mpaId) throws ValidationException {
-        Integer mpaCount = mpaStorage.findAllMpa().size();
+        int mpaCount = mpaStorage.findMpaCount();
         if (mpaId > mpaCount) {
             throw new ValidationException("Mpa has only " + mpaCount + " ratings");
         }

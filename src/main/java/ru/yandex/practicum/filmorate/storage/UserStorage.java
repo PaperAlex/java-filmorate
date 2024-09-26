@@ -29,4 +29,6 @@ public interface UserStorage {
     List<User> findMutualFriends(Long userId, Long otherId);
 
     void deleteUser(Long userId);
+
+    public boolean existById(Long userId, Long friendId) throws NotFoundException;
 }

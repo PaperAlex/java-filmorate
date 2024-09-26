@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
@@ -36,5 +38,12 @@ public class MpaDbStorage implements MpaStorage {
         int id = resultSet.getInt("rating_id");
         String name = resultSet.getString("rating_name");
         return new Mpa(id, name);
+    }
+
+    private static final String FIND_MPA_COUNT = "SELECT COUNT(rating_id) AS cnt FROM rating;";
+
+    @Override
+    public Integer findMpaCount() {
+        return jdbcTemplate.queryForObject(FIND_MPA_COUNT, Integer.class);
     }
 }

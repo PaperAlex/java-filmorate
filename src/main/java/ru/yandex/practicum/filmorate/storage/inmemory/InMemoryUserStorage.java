@@ -172,4 +172,9 @@ public class InMemoryUserStorage implements UserStorage {
     public void deleteUser(Long userId) {
 
     }
+
+    @Override
+    public boolean existById(Long userId, Long friendId) throws NotFoundException {
+        return false;
+    }
 }

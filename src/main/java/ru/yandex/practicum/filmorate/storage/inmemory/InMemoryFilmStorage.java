@@ -122,4 +122,9 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .limit(count)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public boolean existFilmById(Long newFilm) throws NotFoundException {
+        return false;
+    }
 }

@@ -9,4 +9,6 @@ public interface MpaStorage {
     List<Mpa> findAllMpa();
 
     Optional<Mpa> findMpaById(Integer id);
+
+    Integer findMpaCount();
 }

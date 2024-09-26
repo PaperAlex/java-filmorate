@@ -27,13 +27,13 @@ public class MpaService {
         return mpaStorage.findAllMpa();
     }
 
+    public Integer findMpaCount() {
+        log.debug("findMpaCount");
+        return mpaStorage.findMpaCount();
+    }
+
     public Optional<Mpa> findMpaById(int id) throws NotFoundException {
-        Optional<Mpa> mpa = mpaStorage.findMpaById(id);
-        if (mpa.isPresent()) {
-            log.debug("findMpaById: {}", mpa);
-            return mpa;
-        } else {
-            throw new NotFoundException("Rating does not exist");
-        }
+        Mpa mpa = mpaStorage.findMpaById(id).orElseThrow(() -> new NotFoundException("Rating does not exist"));
+        return Optional.ofNullable(mpa);
     }
 }

@@ -22,6 +22,7 @@ public interface FilmStorage {
 
     void addLike(Long filmId, Long userId) throws DuplicatedDataException, NotFoundException;
 
-    Collection<Film> findPopularFilms(Integer count);
+    Collection<Film> findPopularFilms(Integer count) throws ValidationException;
 
+    boolean existFilmById (Long newFilm) throws NotFoundException;
 }

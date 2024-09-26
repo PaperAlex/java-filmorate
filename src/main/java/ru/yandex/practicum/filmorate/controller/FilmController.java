@@ -36,7 +36,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) throws NotFoundException, ValidationException, SQLException {
+    public Film create(@Valid @RequestBody Film film) throws NotFoundException, ValidationException {
         return filmService.create(film);
     }
 

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -27,12 +28,7 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) throws NotFoundException {
-        if (userStorage.findUserById(userId).isEmpty() || userStorage.findUserById(friendId).isEmpty()) {
-            throw new NotFoundException("Пользователь не найден.");
-        }
-        if (userId < 0 || friendId < 0) {
-            throw new NotFoundException("Пользователь не найден.");
-        }
+       userStorage.existById(userId, friendId);
         log.debug("addFriend: {} to {}", friendId, userId);
         userStorage.addFriend(userId, friendId);
     }
@@ -82,7 +78,7 @@ public class UserService {
     }
 
     private void userNameValidation(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (!StringUtils.hasText(user.getName())) {
             user.setName(user.getLogin());
         }
     }

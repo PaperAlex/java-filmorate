@@ -126,4 +126,16 @@ public class UserDbStorage implements UserStorage {
     public void deleteUser(Long userId) {
         jdbcTemplate.update(DELETE_USER_QUERY, userId);
     }
+
+    @Override
+    public boolean existById(Long userId, Long friendId) throws NotFoundException {
+        if (findUserById(userId).isEmpty() || findUserById(friendId).isEmpty()) {
+            throw new NotFoundException("Пользователь не найден.");
+        }
+        if (userId < 0 || friendId < 0) {
+            throw new NotFoundException("Пользователь не найден.");
+        }
+        return true;
+    }
 }
+
