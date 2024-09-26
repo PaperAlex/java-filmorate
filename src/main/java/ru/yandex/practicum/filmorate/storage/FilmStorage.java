@@ -24,5 +24,5 @@ public interface FilmStorage {
 
     Collection<Film> findPopularFilms(Integer count) throws ValidationException;
 
-    boolean existFilmById (Long newFilm) throws NotFoundException;
+    boolean existFilmById(Long newFilm) throws NotFoundException;
 }
