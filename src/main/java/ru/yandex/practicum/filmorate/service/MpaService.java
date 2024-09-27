@@ -33,7 +33,8 @@ public class MpaService {
     }
 
     public Optional<Mpa> findMpaById(int id) throws NotFoundException {
-        Mpa mpa = mpaStorage.findMpaById(id).orElseThrow(() -> new NotFoundException("Rating does not exist"));
+        Mpa mpa = mpaStorage.findMpaById(id)
+                .orElseThrow(() -> new NotFoundException("Rating does not exist"));
         return Optional.ofNullable(mpa);
     }
 }
