@@ -189,7 +189,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public boolean existFilmById(Long filmId) throws NotFoundException {
         String sql = "SELECT EXISTS(SELECT 1 FROM films WHERE film_id = ?);";
-        if(Boolean.FALSE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, filmId))) {
+        if (Boolean.FALSE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, filmId))) {
             throw new NotFoundException("Должен быть указан существующий id");
         }
         return true;
