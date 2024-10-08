@@ -10,18 +10,19 @@ import java.util.Optional;
 
 public interface FilmStorage {
 
+    void deleteLike(Long filmId, Long userId) throws NotFoundException;
+
     Collection<Film> findAll();
 
-    Film create(Film film) throws ValidationException;
+    Film create(Film film) throws ValidationException, NotFoundException;
 
     Film update(Film film) throws ValidationException, NotFoundException;
 
-    Optional<Film> findById(Long id);
+    Optional<Film> findFilmById(Long id) throws NotFoundException;
 
-    void likeDuplicatedValidation(Long filmId, Long userId) throws DuplicatedDataException;
+    void addLike(Long filmId, Long userId) throws DuplicatedDataException, NotFoundException;
 
-    Collection<Film> findPopularFilms(Integer count);
+    Collection<Film> findPopularFilms(Integer count) throws ValidationException;
 
-    void updateFilmValidation(Film newFilm) throws NotFoundException;
-
+    boolean existFilmById(Long newFilm) throws NotFoundException;
 }

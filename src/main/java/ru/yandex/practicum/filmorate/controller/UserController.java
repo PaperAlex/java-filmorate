@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
@@ -14,12 +14,17 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import java.util.Collection;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
 
+
     private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public Collection<User> findAll() {
@@ -29,12 +34,14 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Valid @RequestBody User user) throws ValidationException, DuplicatedDataException {
-        return userService.create(user);
+        userService.create(user);
+        return user;
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User newUser) throws ValidationException, NotFoundException, DuplicatedDataException {
-        return userService.update(newUser);
+        userService.update(newUser);
+        return newUser;
     }
 
 
